@@ -18,8 +18,21 @@ async function run() {
       const query = {}
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
-      res.send(services);
+      const shuffled = services.sort(()=> 0.5 - Math.random());
+      const servicesHome = shuffled.slice(0, 3);
+      res.send({services, servicesHome});
     })
+
+    // app.get('/servicesHome', async (req, res) => {
+    //   const serviceCollection = client.db("visaService").collection("services");
+    //   const query = {}
+    //   const cursor = serviceCollection.find(query);
+    //   const services = await cursor.toArray();
+    //   const shuffled = services.sort(()=> 0.5 - Math.random());
+    //   const servicesHome = shuffled.slice(0, 3);
+
+    //   res.send(servicesHome);
+    // })
   }
   finally {
 
