@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const port = process.env.PORT || 5000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 app.use(cors());
@@ -12,27 +12,25 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
+  const serviceCollection = client.db("visaService").collection("services");
   try {
     app.get('/services', async (req, res) => {
-      const serviceCollection = client.db("visaService").collection("services");
       const query = {}
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
       const shuffled = services.sort(()=> 0.5 - Math.random());
       const servicesHome = shuffled.slice(0, 3);
       res.send({services, servicesHome});
-    })
+    });
 
-    // app.get('/servicesHome', async (req, res) => {
-    //   const serviceCollection = client.db("visaService").collection("services");
-    //   const query = {}
-    //   const cursor = serviceCollection.find(query);
-    //   const services = await cursor.toArray();
-    //   const shuffled = services.sort(()=> 0.5 - Math.random());
-    //   const servicesHome = shuffled.slice(0, 3);
+    app.get('/services/:id', async (req, res) => {
+      const searchID = req.params.id
+      const query = {_id: ObjectId(searchID)}
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services)
+    });
 
-    //   res.send(servicesHome);
-    // })
   }
   finally {
 
@@ -40,13 +38,6 @@ async function run() {
 }
 run().catch(err => console.log(err))
 
-
-
-// client.connect(err => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
 
 
 app.get('/', (req, res) => {
