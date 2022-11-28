@@ -13,6 +13,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
   const serviceCollection = client.db("visaService").collection("services");
+  const usersCollection = client.db("visaService").collection("users");
+
   try {
     app.get('/services', async (req, res) => {
       const query = {}
@@ -30,6 +32,14 @@ async function run() {
       const services = await cursor.toArray();
       res.send(services)
     });
+
+    app.get('/reviews/:id', async(req, res) => {
+      const searchID = req.params.id
+      const query = {serviceId: searchID}
+      const cursor = usersCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services)
+    })
 
   }
   finally {
