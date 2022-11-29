@@ -20,25 +20,45 @@ async function run() {
       const query = {}
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
-      const shuffled = services.sort(()=> 0.5 - Math.random());
+      const shuffled = services.sort(() => 0.5 - Math.random());
       const servicesHome = shuffled.slice(0, 3);
-      res.send({services, servicesHome});
+      res.send({ services, servicesHome });
     });
 
     app.get('/services/:id', async (req, res) => {
       const searchID = req.params.id
-      const query = {_id: ObjectId(searchID)}
+      const query = { _id: ObjectId(searchID) }
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
       res.send(services)
     });
 
-    app.get('/reviews/:id', async(req, res) => {
+    app.get('/reviews/:id', async (req, res) => {
       const searchID = req.params.id
-      const query = {serviceId: searchID}
+      const query = { serviceId: searchID }
       const cursor = usersCollection.find(query);
       const services = await cursor.toArray();
       res.send(services)
+    })
+
+    // getting my reviews
+    app.get ('/myreviews', async (req, res) => {
+      let query = {}
+      if (req.query.email){
+        query = {
+          email: req.query.email
+        }
+      }
+      const cursor = usersCollection.find(query);
+      const myReview = await cursor.toArray();
+      res.send(myReview)
+    })
+
+    app.post('/reviews', async (req, res) => {
+      // const searchID = req.params.id;
+      const reviewByUser = req.body;
+      const result = await usersCollection.insertOne(reviewByUser);
+      res.send(result);
     })
 
   }
