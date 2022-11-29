@@ -54,6 +54,24 @@ async function run() {
       res.send(myReview)
     })
 
+    // updating My Reviews ***
+    app.patch ('/editreview', async (req, res) => {
+      let query = {}
+      const changedReview = req.body.review;
+      console.log(changedReview);
+      if (req.query.id) {
+        query = { _id: ObjectId(req.query.id) }
+      }
+      const updatedDoc  = {
+          $set: {review: changedReview}
+      };
+      const result = await usersCollection.updateOne(query, updatedDoc);
+      // const updateReview = await result.toArray()
+      // res.send(updateReview)
+      console.log("updateReview", result);
+      res.send(result)
+    })
+
     app.post('/reviews', async (req, res) => {
       // const searchID = req.params.id;
       const reviewByUser = req.body;
