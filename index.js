@@ -36,10 +36,23 @@ async function run() {
     app.get('/reviews/:id', async (req, res) => {
       const searchID = req.params.id
       const query = { serviceId: searchID }
-      const cursor = usersCollection.find(query);
+      const options = {
+        sort: { date: -1 },
+      }
+      const cursor = usersCollection.find(query, options);
       const services = await cursor.toArray();
       res.send(services)
     })
+
+    //adding reviews under service details
+    app.post('/reviews', async (req, res) => {
+      const reviewByUser = req.body;
+      // const date = Date()
+      // const reviewWithDate = [reviewByUser, {date}]
+      const result = await usersCollection.insertOne(reviewByUser);
+      res.send(result);
+    })
+
 
     // getting my reviews
     app.get('/myreviews', async (req, res) => {
@@ -68,11 +81,6 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/reviews', async (req, res) => {
-      const reviewByUser = req.body;
-      const result = await usersCollection.insertOne(reviewByUser);
-      res.send(result);
-    })
 
     // delete my Review
     app.delete('/myreview/delete/:id', async (req, res) => {
