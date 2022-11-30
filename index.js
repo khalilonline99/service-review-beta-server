@@ -20,8 +20,8 @@ async function run() {
       const query = {}
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
-      const shuffled = services.sort(() => 0.5 - Math.random());
-      const servicesHome = shuffled.slice(0, 3);
+      // const shuffled = services.sort(() => 0.5 - Math.random());
+      const servicesHome = services.slice(-3);
       res.send({ services, servicesHome });
     });
 
@@ -42,9 +42,9 @@ async function run() {
     })
 
     // getting my reviews
-    app.get ('/myreviews', async (req, res) => {
+    app.get('/myreviews', async (req, res) => {
       let query = {}
-      if (req.query.email){
+      if (req.query.email) {
         query = {
           email: req.query.email
         }
@@ -55,29 +55,42 @@ async function run() {
     })
 
     // updating My Reviews ***
-    app.patch ('/editreview', async (req, res) => {
+    app.patch('/editreview', async (req, res) => {
       let query = {}
       const changedReview = req.body.review;
-      console.log(changedReview);
       if (req.query.id) {
         query = { _id: ObjectId(req.query.id) }
       }
-      const updatedDoc  = {
-          $set: {review: changedReview}
+      const updatedDoc = {
+        $set: { review: changedReview }
       };
       const result = await usersCollection.updateOne(query, updatedDoc);
-      // const updateReview = await result.toArray()
-      // res.send(updateReview)
-      console.log("updateReview", result);
       res.send(result)
     })
 
     app.post('/reviews', async (req, res) => {
-      // const searchID = req.params.id;
       const reviewByUser = req.body;
       const result = await usersCollection.insertOne(reviewByUser);
       res.send(result);
     })
+
+    // delete my Review
+    app.delete('/myreview/delete/:id', async (req, res) => {
+      const reviewId = req.params.id;
+      const query = { _id: ObjectId(reviewId) }
+      const result = await usersCollection.deleteOne(query);
+      res.send(result)
+
+    })
+
+    // add review by user
+    app.post('/addservicebyuser', async (req, res) => {
+      const serviceByUser = req.body;
+      const result = await serviceCollection.insertOne(serviceByUser)
+      // console.log(serviceByUser);
+      res.send(serviceByUser)
+    })
+
 
   }
   finally {
