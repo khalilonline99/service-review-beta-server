@@ -40,12 +40,16 @@ async function run() {
       res.send({ token })
     })
 
+    // services in home
     app.get('/services', async (req, res) => {
-      const query = {}
-      const cursor = serviceCollection.find(query);
+      const query = {};
+      const options = {
+        sort: { date: -1 },
+      };
+      const cursor = serviceCollection.find(query, options);
       const services = await cursor.toArray();
       // const shuffled = services.sort(() => 0.5 - Math.random());
-      const servicesHome = services.slice(-3);
+      const servicesHome = services.slice(0, 3);
       res.send({ services, servicesHome });
     });
 
@@ -57,6 +61,7 @@ async function run() {
       res.send(services)
     });
 
+    // showing reviews under service details
     app.get('/reviews/:id', async (req, res) => {
       const searchID = req.params.id
       const query = { serviceId: searchID }
@@ -70,6 +75,10 @@ async function run() {
 
     //adding reviews under service details
     app.post('/reviews', verifyJWT, async (req, res) => {
+      const decoded = req.decoded;
+      if (decoded.email !== req.query.email) {
+        res.status(403).send({ message: "unauthorized access" })
+      }
       const reviewByUser = req.body;
       // const date = Date()
       // const reviewWithDate = [reviewByUser, {date}]
@@ -119,7 +128,7 @@ async function run() {
 
     })
 
-    // add review by user
+    // add service by user
     app.post('/addservicebyuser', async (req, res) => {
       const serviceByUser = req.body;
       const result = await serviceCollection.insertOne(serviceByUser)
