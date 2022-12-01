@@ -12,15 +12,17 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.7njjpna.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
+// JWT verification
 function verifyJWT(req, res, next) {
-  const authHeader = req.header.authorization;
+  const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(404).send({ message: 'unauthorized access' })
+    return res.status(401).send({ message: 'Unauthorized Access :(' });
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ message: 'Forbidden access' })
+      return res.status(403).send({ message: 'Forbidden access :@' });
     }
     req.decoded = decoded;
     next()
@@ -33,11 +35,11 @@ async function run() {
     const serviceCollection = client.db("visaService").collection("services");
     const usersCollection = client.db("visaService").collection("users");
 
-    app.post('/jwt', verifyJWT, (req, res) => {
+    app.post('/jwt', (req, res) => {
 
       const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1hr' })
-      res.send({ token })
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+      res.send({token})
     })
 
     // services in home
@@ -75,10 +77,6 @@ async function run() {
 
     //adding reviews under service details
     app.post('/reviews', verifyJWT, async (req, res) => {
-      const decoded = req.decoded;
-      if (decoded.email !== req.query.email) {
-        res.status(403).send({ message: "unauthorized access" })
-      }
       const reviewByUser = req.body;
       // const date = Date()
       // const reviewWithDate = [reviewByUser, {date}]
@@ -86,20 +84,24 @@ async function run() {
       res.send(result);
     })
 
-
+  
     // getting my reviews with user email
     app.get('/myreviews', verifyJWT, async (req, res) => {
       const decoded = req.decoded;
       if (decoded.email !== req.query.email) {
-        res.status(403).send({ message: "unauthorized access" })
+        res.status(403).send({ message: "Unauthorized ACCESS" })
       }
+
       let query = {}
       if (req.query.email) {
         query = {
           email: req.query.email
         }
       }
-      const cursor = usersCollection.find(query);
+      const options = {
+        sort: { date: -1 },
+      }
+      const cursor = usersCollection.find(query, options);
       const myReview = await cursor.toArray();
       res.send(myReview)
     })
