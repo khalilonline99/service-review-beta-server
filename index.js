@@ -78,8 +78,6 @@ async function run() {
     //adding reviews under service details
     app.post('/reviews', verifyJWT, async (req, res) => {
       const reviewByUser = req.body;
-      // const date = Date()
-      // const reviewWithDate = [reviewByUser, {date}]
       const result = await usersCollection.insertOne(reviewByUser);
       res.send(result);
     })
@@ -149,7 +147,7 @@ run().catch(err => console.log(err))
 
 
 app.get('/', (req, res) => {
-  res.send('EduPro Running OOOOOOOK!')
+  res.send('EduPro Running OK!')
 })
 
 
